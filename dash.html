@@ -1,0 +1,1794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gerenciamento de Projetos de Engenharia</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="app" class="flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-md">
+            <div class="container mx-auto py-4 px-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-drafting-compass text-2xl"></i>
+                    <h1 class="text-xl md:text-2xl font-bold">Sistema de Gerenciamento de Projetos de Engenharia</h1>
+                </div>
+                <div class="flex items-center">
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-blue-600 focus:outline-none">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="w-full md:w-64 bg-white rounded-lg shadow-md p-4 md:sticky md:top-6 h-auto md:self-start">
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-4">Projeto</h2>
+                    <div id="projectInfo" class="space-y-2 text-sm text-gray-600">
+                        <p><span class="font-medium">Nome:</span> <span id="projectName">Não definido</span></p>
+                        <p><span class="font-medium">Total de arquivos:</span> <span id="totalFiles">0</span></p>
+                        <p><span class="font-medium">Última atualização:</span> <span id="lastUpdated">-</span></p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-4">Disciplinas</h2>
+                    <ul id="disciplinesList" class="space-y-2 text-sm">
+                        <li class="flex justify-between items-center text-gray-500">
+                            <span>Carregue um projeto...</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="mb-6">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-4">Tipos de Arquivo</h2>
+                    <ul id="fileTypesList" class="space-y-2 text-sm">
+                        <li class="flex justify-between items-center text-gray-500">
+                            <span>Carregue um projeto...</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="pt-4 border-t border-gray-200">
+                    <button id="importButton" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition flex items-center justify-center">
+                        <i class="fas fa-upload mr-2"></i>
+                        <span>Importar Projeto</span>
+                    </button>
+                    <button id="clearDataButton" class="w-full mt-2 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition flex items-center justify-center">
+                        <i class="fas fa-trash mr-2"></i>
+                        <span>Limpar Dados</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <div class="flex-grow">
+                <!-- Drop Zone -->
+                <div id="dropZone" class="hidden mb-6 border-2 border-dashed border-blue-300 bg-blue-50 rounded-lg p-8 text-center cursor-pointer hover:bg-blue-100 transition">
+                    <div class="flex flex-col items-center space-y-4">
+                        <i class="fas fa-folder-open text-5xl text-blue-300"></i>
+                        <p class="text-blue-600 font-medium">Arraste e solte a pasta do seu projeto aqui</p>
+                        <p class="text-sm text-blue-400">ou clique para selecionar</p>
+                        <input type="file" id="folderInput" webkitdirectory directory multiple class="hidden">
+                    </div>
+                </div>
+
+                <!-- Dashboard -->
+                <div id="dashboard" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <h3 class="text-base font-semibold text-gray-700 mb-2">Distribuição de Arquivos</h3>
+                        <div id="fileDistributionChart" class="h-48 flex items-center justify-center">
+                            <p class="text-gray-400">Carregue um projeto para ver estatísticas</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <h3 class="text-base font-semibold text-gray-700 mb-2">Arquivos por Disciplina</h3>
+                        <div id="disciplineDistributionChart" class="h-48 flex items-center justify-center">
+                            <p class="text-gray-400">Carregue um projeto para ver estatísticas</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-4">
+                        <h3 class="text-base font-semibold text-gray-700 mb-2">Atividade Recente</h3>
+                        <div id="recentActivity" class="h-48 overflow-y-auto text-sm space-y-2">
+                            <p class="text-gray-400">Nenhuma atividade recente</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex-grow relative">
+                            <input 
+                                id="searchInput" 
+                                type="text" 
+                                placeholder="Pesquisar arquivos..." 
+                                class="w-full py-2 px-4 pl-10 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:border-blue-500 transition"
+                            >
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                        <select id="filterType" class="py-2 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:border-blue-500 transition">
+                            <option value="all">Todos os tipos</option>
+                            <option value="pdf">PDF</option>
+                            <option value="dwg">DWG</option>
+                            <option value="xlsx">Excel</option>
+                            <option value="docx">Word</option>
+                            <option value="image">Imagens</option>
+                        </select>
+                        <select id="filterDiscipline" class="py-2 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 focus:border-blue-500 transition">
+                            <option value="all">Todas as disciplinas</option>
+                        </select>
+                        <button id="searchButton" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition">
+                            <i class="fas fa-search mr-2"></i>
+                            <span>Buscar</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- File Browser -->
+                <div id="fileBrowser" class="bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-gray-700">Arquivos do Projeto</h2>
+                        <div class="flex space-x-2">
+                            <button id="viewGrid" class="p-2 bg-gray-200 rounded hover:bg-gray-300 focus:outline-none active:bg-gray-300">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button id="viewList" class="p-2 bg-gray-100 rounded hover:bg-gray-300 focus:outline-none">
+                                <i class="fas fa-list"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="breadcrumbs" class="flex flex-wrap items-center text-sm text-gray-600 mb-4">
+                        <span class="text-blue-600 cursor-pointer hover:underline">Raiz</span>
+                    </div>
+                    <div id="filesList" class="min-h-[300px] border border-gray-200 rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div class="flex flex-col items-center justify-center text-gray-400 col-span-full h-48">
+                            <i class="fas fa-folder-open text-5xl mb-2"></i>
+                            <p>Nenhum arquivo para exibir</p>
+                            <p class="text-sm">Importe seu projeto para começar</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Viewer -->
+                <div id="fileViewer" class="hidden bg-white rounded-lg shadow-md p-4 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 id="viewerTitle" class="text-lg font-semibold text-gray-700 truncate">Visualizador de Arquivos</h2>
+                        <button id="closeViewer" class="p-2 text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="viewerContent" class="min-h-[500px] border border-gray-200 rounded-lg p-4 flex items-center justify-center">
+                        <p class="text-gray-400">Selecione um arquivo para visualizar</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white shadow-inner mt-auto">
+            <div class="container mx-auto py-4 px-4">
+                <p class="text-center text-gray-500 text-sm">
+                    Sistema de Gerenciamento de Projetos de Engenharia - Desenvolvido para gerenciar projetos de lojas
+                </p>
+            </div>
+        </footer>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
+                <div class="loader mb-4 w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p id="loadingMessage" class="text-gray-700">Processando arquivos...</p>
+                <p id="loadingProgress" class="text-sm text-gray-500 mt-2">0%</p>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notificationContainer" class="fixed bottom-4 right-4 flex flex-col space-y-2 z-40"></div>
+    </div>
+
+    <script>
+        // Global object to store application state
+        const appState = {
+            mode: 'light',
+            fileSystem: null,
+            currentPath: '/',
+            selectedFile: null,
+            filteredFiles: [],
+            viewMode: 'grid',
+            projectName: 'Não definido',
+            disciplineMap: {
+                "00": "Documentos e Análises",
+                "01": "Arquitetura",
+                "02": "Estrutural",
+                "03": "Elétrica",
+                "04": "Lógica e Comunicação",
+                "05": "Hidráulica",
+                "06": "Gás",
+                "07": "SPK e Detecção",
+                "08": "Ar Condicionado e Exaustão",
+                "09": "Fotos",
+                "10": "Orçamentos",
+                "11": "Cronogramas"
+            },
+            fileTypeIcons: {
+                "folder": "fas fa-folder text-yellow-400",
+                "pdf": "fas fa-file-pdf text-red-500",
+                "dwg": "fas fa-drafting-compass text-blue-500",
+                "xlsx": "fas fa-file-excel text-green-600",
+                "xls": "fas fa-file-excel text-green-600",
+                "doc": "fas fa-file-word text-blue-600",
+                "docx": "fas fa-file-word text-blue-600",
+                "ppt": "fas fa-file-powerpoint text-orange-600",
+                "pptx": "fas fa-file-powerpoint text-orange-600",
+                "jpg": "fas fa-file-image text-purple-500",
+                "jpeg": "fas fa-file-image text-purple-500",
+                "png": "fas fa-file-image text-purple-500",
+                "txt": "fas fa-file-alt text-gray-500",
+                "zip": "fas fa-file-archive text-gray-600",
+                "rar": "fas fa-file-archive text-gray-600",
+                "default": "fas fa-file text-gray-400"
+            },
+            db: null,
+            recentFiles: []
+        };
+
+        // DOM Elements
+        const elements = {
+            themeToggle: document.getElementById('themeToggle'),
+            dropZone: document.getElementById('dropZone'),
+            folderInput: document.getElementById('folderInput'),
+            importButton: document.getElementById('importButton'),
+            clearDataButton: document.getElementById('clearDataButton'),
+            projectName: document.getElementById('projectName'),
+            totalFiles: document.getElementById('totalFiles'),
+            lastUpdated: document.getElementById('lastUpdated'),
+            disciplinesList: document.getElementById('disciplinesList'),
+            fileTypesList: document.getElementById('fileTypesList'),
+            fileDistributionChart: document.getElementById('fileDistributionChart'),
+            disciplineDistributionChart: document.getElementById('disciplineDistributionChart'),
+            recentActivity: document.getElementById('recentActivity'),
+            searchInput: document.getElementById('searchInput'),
+            filterType: document.getElementById('filterType'),
+            filterDiscipline: document.getElementById('filterDiscipline'),
+            searchButton: document.getElementById('searchButton'),
+            filesList: document.getElementById('filesList'),
+            breadcrumbs: document.getElementById('breadcrumbs'),
+            viewGrid: document.getElementById('viewGrid'),
+            viewList: document.getElementById('viewList'),
+            fileViewer: document.getElementById('fileViewer'),
+            viewerTitle: document.getElementById('viewerTitle'),
+            viewerContent: document.getElementById('viewerContent'),
+            closeViewer: document.getElementById('closeViewer'),
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            loadingMessage: document.getElementById('loadingMessage'),
+            loadingProgress: document.getElementById('loadingProgress'),
+            notificationContainer: document.getElementById('notificationContainer')
+        };
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('EngineeringProjectsDB', 1);
+                
+                request.onerror = (event) => {
+                    console.error('IndexedDB error:', event.target.error);
+                    showNotification('Erro ao inicializar o banco de dados', 'error');
+                    reject(event.target.error);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    // Create object stores
+                    if (!db.objectStoreNames.contains('projectInfo')) {
+                        db.createObjectStore('projectInfo', { keyPath: 'id' });
+                    }
+                    
+                    if (!db.objectStoreNames.contains('files')) {
+                        const filesStore = db.createObjectStore('files', { keyPath: 'path' });
+                        filesStore.createIndex('parentPath', 'parentPath', { unique: false });
+                        filesStore.createIndex('type', 'type', { unique: false });
+                        filesStore.createIndex('extension', 'extension', { unique: false });
+                        filesStore.createIndex('discipline', 'discipline', { unique: false });
+                    }
+                };
+                
+                request.onsuccess = (event) => {
+                    appState.db = event.target.result;
+                    resolve(appState.db);
+                    
+                    // Load existing project data if available
+                    loadProjectData();
+                };
+            });
+        }
+
+        // Load project data from IndexedDB
+        function loadProjectData() {
+            if (!appState.db) return;
+            
+            const transaction = appState.db.transaction(['projectInfo', 'files'], 'readonly');
+            const projectStore = transaction.objectStore('projectInfo');
+            const filesStore = transaction.objectStore('files');
+            
+            // Get project info
+            const projectRequest = projectStore.get(1);
+            projectRequest.onsuccess = (event) => {
+                const projectInfo = event.target.result;
+                if (projectInfo) {
+                    appState.projectName = projectInfo.name;
+                    elements.projectName.textContent = projectInfo.name;
+                    elements.lastUpdated.textContent = new Date(projectInfo.lastUpdated).toLocaleString();
+                    
+                    // Show the file browser instead of drop zone
+                    elements.dropZone.classList.add('hidden');
+                    loadFileSystem();
+                } else {
+                    // No project loaded yet, show drop zone
+                    elements.dropZone.classList.remove('hidden');
+                }
+            };
+            
+            // Count files
+            const countRequest = filesStore.count();
+            countRequest.onsuccess = (event) => {
+                const count = event.target.result;
+                elements.totalFiles.textContent = count;
+                
+                if (count > 0) {
+                    // Load recent files
+                    loadRecentFiles();
+                    // Update charts
+                    updateCharts();
+                    // Update discipline and file type filters
+                    updateFilters();
+                }
+            };
+        }
+
+        // Load the file system structure
+        function loadFileSystem() {
+            if (!appState.db) return;
+            
+            const transaction = appState.db.transaction(['files'], 'readonly');
+            const filesStore = transaction.objectStore('files');
+            const filesRequest = filesStore.getAll();
+            
+            filesRequest.onsuccess = (event) => {
+                const files = event.target.result;
+                
+                // Create file system object
+                appState.fileSystem = {
+                    root: buildFileSystemTree(files)
+                };
+                
+                // Navigate to root directory
+                navigateTo('/');
+            };
+        }
+
+        // Build file system tree from flat list of files
+        function buildFileSystemTree(files) {
+            const root = { name: 'root', path: '/', type: 'directory', children: {}, files: [] };
+            
+            // First, create all directories
+            files.forEach(file => {
+                if (file.type === 'directory') {
+                    let pathParts = file.path.split('/').filter(part => part);
+                    let currentPath = '';
+                    let current = root;
+                    
+                    for (let i = 0; i < pathParts.length; i++) {
+                        const part = pathParts[i];
+                        currentPath += '/' + part;
+                        
+                        if (!current.children[part]) {
+                            current.children[part] = {
+                                name: part,
+                                path: currentPath,
+                                type: 'directory',
+                                children: {},
+                                files: []
+                            };
+                        }
+                        
+                        current = current.children[part];
+                    }
+                }
+            });
+            
+            // Then, add files to their parent directories
+            files.forEach(file => {
+                if (file.type === 'file') {
+                    const parentPath = file.parentPath;
+                    let current = root;
+                    
+                    if (parentPath === '/') {
+                        root.files.push(file);
+                    } else {
+                        const pathParts = parentPath.split('/').filter(part => part);
+                        
+                        for (let i = 0; i < pathParts.length; i++) {
+                            const part = pathParts[i];
+                            if (current.children[part]) {
+                                current = current.children[part];
+                            }
+                        }
+                        
+                        current.files.push(file);
+                    }
+                }
+            });
+            
+            return root;
+        }
+
+        // Navigate to a specific path in the file system
+        function navigateTo(path) {
+            appState.currentPath = path;
+            updateBreadcrumbs(path);
+            
+            let current;
+            if (path === '/') {
+                current = appState.fileSystem.root;
+            } else {
+                const pathParts = path.split('/').filter(part => part);
+                current = appState.fileSystem.root;
+                
+                for (let i = 0; i < pathParts.length; i++) {
+                    const part = pathParts[i];
+                    if (current.children[part]) {
+                        current = current.children[part];
+                    } else {
+                        // Path not found
+                        showNotification('Caminho não encontrado', 'error');
+                        return;
+                    }
+                }
+            }
+            
+            // Display directories and files
+            displayFilesAndFolders(current);
+        }
+
+        // Update breadcrumbs based on current path
+        function updateBreadcrumbs(path) {
+            elements.breadcrumbs.innerHTML = '';
+            
+            // Add root
+            const rootSpan = document.createElement('span');
+            rootSpan.textContent = 'Raiz';
+            rootSpan.className = 'text-blue-600 cursor-pointer hover:underline';
+            rootSpan.onclick = () => navigateTo('/');
+            elements.breadcrumbs.appendChild(rootSpan);
+            
+            if (path === '/') return;
+            
+            const pathParts = path.split('/').filter(part => part);
+            let currentPath = '';
+            
+            pathParts.forEach((part, index) => {
+                // Add separator
+                const separator = document.createElement('span');
+                separator.textContent = ' / ';
+                separator.className = 'text-gray-400 mx-1';
+                elements.breadcrumbs.appendChild(separator);
+                
+                // Add path part
+                currentPath += '/' + part;
+                const partSpan = document.createElement('span');
+                partSpan.textContent = part;
+                
+                if (index === pathParts.length - 1) {
+                    partSpan.className = 'text-gray-600';
+                } else {
+                    partSpan.className = 'text-blue-600 cursor-pointer hover:underline';
+                    partSpan.onclick = () => navigateTo(currentPath);
+                }
+                
+                elements.breadcrumbs.appendChild(partSpan);
+            });
+        }
+
+        // Display files and folders in the current directory
+        function displayFilesAndFolders(directory) {
+            elements.filesList.innerHTML = '';
+            
+            // Get directories and sort them alphabetically
+            const dirs = Object.values(directory.children).sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Get files and sort them alphabetically
+            const files = directory.files.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Display message if empty
+            if (dirs.length === 0 && files.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'flex flex-col items-center justify-center text-gray-400 col-span-full h-48';
+                emptyMessage.innerHTML = `
+                    <i class="fas fa-folder-open text-5xl mb-2"></i>
+                    <p>Esta pasta está vazia</p>
+                `;
+                elements.filesList.appendChild(emptyMessage);
+                return;
+            }
+            
+            // Display directories
+            dirs.forEach(dir => {
+                const dirElement = document.createElement('div');
+                if (appState.viewMode === 'grid') {
+                    dirElement.className = 'bg-gray-50 rounded-lg border border-gray-200 p-4 flex flex-col items-center hover:bg-gray-100 cursor-pointer transition';
+                    dirElement.innerHTML = `
+                        <i class="fas fa-folder text-yellow-400 text-4xl mb-2"></i>
+                        <p class="text-sm font-medium text-center truncate w-full">${dir.name}</p>
+                    `;
+                } else {
+                    dirElement.className = 'bg-gray-50 rounded-lg border border-gray-200 p-3 flex items-center hover:bg-gray-100 cursor-pointer transition col-span-full';
+                    dirElement.innerHTML = `
+                        <i class="fas fa-folder text-yellow-400 text-xl mr-3"></i>
+                        <div class="flex-grow">
+                            <p class="font-medium truncate">${dir.name}</p>
+                        </div>
+                    `;
+                }
+                
+                dirElement.onclick = () => navigateTo(dir.path);
+                elements.filesList.appendChild(dirElement);
+            });
+            
+            // Display files
+            files.forEach(file => {
+                const fileElement = document.createElement('div');
+                const extension = file.extension.toLowerCase();
+                const iconClass = appState.fileTypeIcons[extension] || appState.fileTypeIcons.default;
+                
+                if (appState.viewMode === 'grid') {
+                    fileElement.className = 'bg-white rounded-lg border border-gray-200 p-4 flex flex-col items-center hover:bg-gray-50 cursor-pointer transition';
+                    fileElement.innerHTML = `
+                        <i class="${iconClass} text-4xl mb-2"></i>
+                        <p class="text-sm font-medium text-center truncate w-full">${file.name}</p>
+                        <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
+                    `;
+                } else {
+                    fileElement.className = 'bg-white rounded-lg border border-gray-200 p-3 flex items-center hover:bg-gray-50 cursor-pointer transition col-span-full';
+                    fileElement.innerHTML = `
+                        <i class="${iconClass} text-xl mr-3"></i>
+                        <div class="flex-grow">
+                            <p class="font-medium truncate">${file.name}</p>
+                            <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
+                        </div>
+                        <p class="text-xs text-gray-500">${new Date(file.lastModified).toLocaleDateString()}</p>
+                    `;
+                }
+                
+                fileElement.onclick = () => viewFile(file);
+                elements.filesList.appendChild(fileElement);
+            });
+        }
+
+        // View file in the file viewer
+        function viewFile(file) {
+            appState.selectedFile = file;
+            elements.viewerTitle.textContent = file.name;
+            elements.fileViewer.classList.remove('hidden');
+            elements.viewerContent.innerHTML = '<div class="loader w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>';
+            
+            // Get file content from IndexedDB
+            const transaction = appState.db.transaction(['files'], 'readonly');
+            const filesStore = transaction.objectStore('files');
+            const fileRequest = filesStore.get(file.path);
+            
+            fileRequest.onsuccess = (event) => {
+                const fileData = event.target.result;
+                
+                if (!fileData || !fileData.content) {
+                    elements.viewerContent.innerHTML = '<p class="text-red-500">Erro: Conteúdo do arquivo não encontrado</p>';
+                    return;
+                }
+                
+                // Add to recent files
+                addToRecentFiles(file);
+                
+                // Display file based on its type
+                const extension = file.extension.toLowerCase();
+                
+                switch (extension) {
+                    case 'pdf':
+                        displayPDF(fileData.content);
+                        break;
+                    case 'jpg':
+                    case 'jpeg':
+                    case 'png':
+                    case 'gif':
+                        displayImage(fileData.content);
+                        break;
+                    case 'txt':
+                        displayText(fileData.content);
+                        break;
+                    case 'dwg':
+                        displayDWG(file);
+                        break;
+                    case 'xlsx':
+                    case 'xls':
+                    case 'docx':
+                    case 'doc':
+                    case 'pptx':
+                    case 'ppt':
+                        displayOfficeDocument(file, extension);
+                        break;
+                    default:
+                        displayGenericFile(file);
+                }
+            };
+            
+            fileRequest.onerror = (event) => {
+                console.error('Error retrieving file:', event.target.error);
+                elements.viewerContent.innerHTML = '<p class="text-red-500">Erro ao carregar o arquivo</p>';
+            };
+        }
+
+        // Display PDF in the viewer
+        function displayPDF(content) {
+            // Convert base64 to blob URL
+            const blob = b64toBlob(content, 'application/pdf');
+            const blobUrl = URL.createObjectURL(blob);
+            
+            elements.viewerContent.innerHTML = `
+                <iframe src="${blobUrl}" class="w-full h-[800px] border-0"></iframe>
+            `;
+        }
+
+        // Display image in the viewer
+        function displayImage(content) {
+            // Convert base64 to blob URL
+            const blob = b64toBlob(content, 'image/jpeg'); // Mime type might not be accurate but browser will detect
+            const blobUrl = URL.createObjectURL(blob);
+            
+            elements.viewerContent.innerHTML = `
+                <div class="flex flex-col items-center">
+                    <img src="${blobUrl}" class="max-w-full max-h-[700px] object-contain" />
+                    <div class="mt-4 flex space-x-4">
+                        <button id="zoomIn" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                            <i class="fas fa-search-plus mr-1"></i> Ampliar
+                        </button>
+                        <button id="zoomOut" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                            <i class="fas fa-search-minus mr-1"></i> Reduzir
+                        </button>
+                        <button id="resetZoom" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                            <i class="fas fa-undo mr-1"></i> Resetar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Add zoom functionality
+            const img = elements.viewerContent.querySelector('img');
+            let scale = 1;
+            
+            document.getElementById('zoomIn').addEventListener('click', () => {
+                scale *= 1.2;
+                img.style.transform = `scale(${scale})`;
+            });
+            
+            document.getElementById('zoomOut').addEventListener('click', () => {
+                scale /= 1.2;
+                img.style.transform = `scale(${scale})`;
+            });
+            
+            document.getElementById('resetZoom').addEventListener('click', () => {
+                scale = 1;
+                img.style.transform = `scale(${scale})`;
+            });
+        }
+
+        // Display text file in the viewer
+        function displayText(content) {
+            // Decode base64 to text
+            const text = atob(content);
+            
+            elements.viewerContent.innerHTML = `
+                <pre class="w-full h-[700px] p-4 bg-gray-50 rounded border border-gray-200 overflow-auto whitespace-pre-wrap">${escapeHTML(text)}</pre>
+            `;
+        }
+
+        // Display DWG file in the viewer
+        function displayDWG(file) {
+            elements.viewerContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 text-center">
+                    <i class="fas fa-drafting-compass text-6xl text-blue-500 mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Arquivo DWG: ${file.name}</h3>
+                    <p class="text-gray-600 mb-4">Os arquivos DWG requerem um visualizador CAD específico.</p>
+                    <p class="text-gray-500 text-sm mb-6">Tamanho: ${formatFileSize(file.size)}</p>
+                    <button id="extractDWG" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+                        <i class="fas fa-download mr-2"></i> Extrair Arquivo
+                    </button>
+                </div>
+            `;
+            
+            // Add extract functionality
+            document.getElementById('extractDWG').addEventListener('click', () => {
+                extractFile(file);
+            });
+        }
+
+        // Display Office documents in the viewer
+        function displayOfficeDocument(file, extension) {
+            const fileTypeMap = {
+                'xlsx': { icon: 'fa-file-excel', color: 'text-green-600', name: 'Excel' },
+                'xls': { icon: 'fa-file-excel', color: 'text-green-600', name: 'Excel' },
+                'docx': { icon: 'fa-file-word', color: 'text-blue-600', name: 'Word' },
+                'doc': { icon: 'fa-file-word', color: 'text-blue-600', name: 'Word' },
+                'pptx': { icon: 'fa-file-powerpoint', color: 'text-orange-600', name: 'PowerPoint' },
+                'ppt': { icon: 'fa-file-powerpoint', color: 'text-orange-600', name: 'PowerPoint' }
+            };
+            
+            const fileType = fileTypeMap[extension] || { icon: 'fa-file', color: 'text-gray-600', name: 'Office' };
+            
+            elements.viewerContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 text-center">
+                    <i class="fas ${fileType.icon} text-6xl ${fileType.color} mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Arquivo ${fileType.name}: ${file.name}</h3>
+                    <p class="text-gray-600 mb-4">Este tipo de arquivo requer o Microsoft Office ou um aplicativo compatível.</p>
+                    <p class="text-gray-500 text-sm mb-6">Tamanho: ${formatFileSize(file.size)}</p>
+                    <button id="extractOffice" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+                        <i class="fas fa-download mr-2"></i> Extrair Arquivo
+                    </button>
+                </div>
+            `;
+            
+            // Add extract functionality
+            document.getElementById('extractOffice').addEventListener('click', () => {
+                extractFile(file);
+            });
+        }
+
+        // Display generic file in the viewer
+        function displayGenericFile(file) {
+            const extension = file.extension.toLowerCase();
+            const iconClass = appState.fileTypeIcons[extension] || appState.fileTypeIcons.default;
+            
+            elements.viewerContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center p-8 text-center">
+                    <i class="${iconClass} text-6xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Arquivo: ${file.name}</h3>
+                    <p class="text-gray-600 mb-4">Este tipo de arquivo não pode ser visualizado diretamente no navegador.</p>
+                    <p class="text-gray-500 text-sm mb-6">Tamanho: ${formatFileSize(file.size)}</p>
+                    <button id="extractFile" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg">
+                        <i class="fas fa-download mr-2"></i> Extrair Arquivo
+                    </button>
+                </div>
+            `;
+            
+            // Add extract functionality
+            document.getElementById('extractFile').addEventListener('click', () => {
+                extractFile(file);
+            });
+        }
+
+        // Extract file to download
+        function extractFile(file) {
+            const transaction = appState.db.transaction(['files'], 'readonly');
+            const filesStore = transaction.objectStore('files');
+            const fileRequest = filesStore.get(file.path);
+            
+            fileRequest.onsuccess = (event) => {
+                const fileData = event.target.result;
+                
+                if (!fileData || !fileData.content) {
+                    showNotification('Erro: Conteúdo do arquivo não encontrado', 'error');
+                    return;
+                }
+                
+                // Convert base64 to blob
+                const blob = b64toBlob(fileData.content, file.type);
+                const blobUrl = URL.createObjectURL(blob);
+                
+                // Create download link
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = file.name;
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    URL.revokeObjectURL(blobUrl);
+                }, 100);
+                
+                showNotification(`Arquivo ${file.name} extraído com sucesso`, 'success');
+            };
+            
+            fileRequest.onerror = (event) => {
+                console.error('Error retrieving file:', event.target.error);
+                showNotification('Erro ao extrair o arquivo', 'error');
+            };
+        }
+
+        // Add file to recent files list
+        function addToRecentFiles(file) {
+            // Check if already in the list
+            const existingIndex = appState.recentFiles.findIndex(f => f.path === file.path);
+            if (existingIndex !== -1) {
+                // Remove from current position
+                appState.recentFiles.splice(existingIndex, 1);
+            }
+            
+            // Add to beginning of the list
+            appState.recentFiles.unshift({
+                ...file,
+                accessTime: Date.now()
+            });
+            
+            // Keep only the most recent 10 files
+            if (appState.recentFiles.length > 10) {
+                appState.recentFiles.pop();
+            }
+            
+            // Update recent files display
+            updateRecentFiles();
+        }
+
+        // Update recent files display
+        function updateRecentFiles() {
+            elements.recentActivity.innerHTML = '';
+            
+            if (appState.recentFiles.length === 0) {
+                elements.recentActivity.innerHTML = '<p class="text-gray-400">Nenhuma atividade recente</p>';
+                return;
+            }
+            
+            appState.recentFiles.forEach(file => {
+                const extension = file.extension.toLowerCase();
+                const iconClass = appState.fileTypeIcons[extension] || appState.fileTypeIcons.default;
+                
+                const fileElement = document.createElement('div');
+                fileElement.className = 'flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer';
+                fileElement.innerHTML = `
+                    <i class="${iconClass} text-sm mr-2"></i>
+                    <div class="flex-grow">
+                        <p class="text-sm font-medium truncate">${file.name}</p>
+                        <p class="text-xs text-gray-500">${new Date(file.accessTime).toLocaleString()}</p>
+                    </div>
+                `;
+                
+                fileElement.onclick = () => viewFile(file);
+                elements.recentActivity.appendChild(fileElement);
+            });
+        }
+
+        // Load recent files from IndexedDB
+        function loadRecentFiles() {
+            if (!appState.db) return;
+            
+            const transaction = appState.db.transaction(['files'], 'readonly');
+            const filesStore = transaction.objectStore('files');
+            
+            // Get all files
+            const filesRequest = filesStore.getAll();
+            
+            filesRequest.onsuccess = (event) => {
+                const files = event.target.result;
+                
+                // Get only files, not directories
+                const onlyFiles = files.filter(file => file.type === 'file');
+                
+                // Sort by lastModified in descending order
+                onlyFiles.sort((a, b) => b.lastModified - a.lastModified);
+                
+                // Keep only the 10 most recent
+                appState.recentFiles = onlyFiles.slice(0, 10).map(file => ({
+                    ...file,
+                    accessTime: file.lastModified
+                }));
+                
+                // Update recent files display
+                updateRecentFiles();
+            };
+        }
+
+        // Update charts based on file data
+        function updateCharts() {
+            if (!appState.db) return;
+            
+            const transaction = appState.db.transaction(['files'], 'readonly');
+            const filesStore = transaction.objectStore('files');
+            
+            // Get all files
+            const filesRequest = filesStore.getAll();
+            
+            filesRequest.onsuccess = (event) => {
+                const files = event.target.result;
+                
+                // Count files by type
+                const fileTypes = {};
+                // Count files by discipline
+                const disciplines = {};
+                
+                // Include only actual files, not directories
+                files.filter(file => file.type === 'file').forEach(file => {
+                    // Count by file extension
+                    const extension = file.extension.toLowerCase();
+                    fileTypes[extension] = (fileTypes[extension] || 0) + 1;
+                    
+                    // Count by discipline
+                    if (file.discipline) {
+                        disciplines[file.discipline] = (disciplines[file.discipline] || 0) + 1;
+                    }
+                });
+                
+                // Update file distribution chart
+                updateFileDistributionChart(fileTypes);
+                
+                // Update discipline distribution chart
+                updateDisciplineDistributionChart(disciplines);
+            };
+        }
+
+        // Update file distribution chart
+        function updateFileDistributionChart(fileTypes) {
+            elements.fileDistributionChart.innerHTML = '';
+            
+            // Convert data to array and sort by count
+            const data = Object.entries(fileTypes)
+                .map(([type, count]) => ({ type, count }))
+                .sort((a, b) => b.count - a.count);
+            
+            // Skip if no data
+            if (data.length === 0) {
+                elements.fileDistributionChart.innerHTML = '<p class="text-gray-400">Sem dados para exibir</p>';
+                return;
+            }
+            
+            // Create chart container
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'w-full h-full flex flex-col';
+            
+            // Create chart legend
+            const legend = document.createElement('div');
+            legend.className = 'flex flex-wrap justify-center gap-2 mb-2';
+            
+            // Create chart
+            const chart = document.createElement('div');
+            chart.className = 'flex-grow flex items-end justify-around';
+            
+            // Colors for the chart
+            const colors = [
+                'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-red-500', 'bg-purple-500',
+                'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-lime-500'
+            ];
+            
+            // Calculate max count for scaling
+            const maxCount = Math.max(...data.map(item => item.count));
+            
+            // Create bars for the chart
+            data.slice(0, 10).forEach((item, index) => {
+                const percentage = Math.round((item.count / maxCount) * 100);
+                const height = Math.max(10, percentage); // Minimum height
+                
+                // Create bar
+                const bar = document.createElement('div');
+                bar.className = 'flex flex-col items-center';
+                bar.innerHTML = `
+                    <span class="text-xs font-semibold mb-1">${item.count}</span>
+                    <div class="${colors[index % colors.length]} rounded-t w-6" style="height: ${height}%"></div>
+                    <span class="text-xs mt-1">${item.type}</span>
+                `;
+                
+                chart.appendChild(bar);
+                
+                // Add to legend
+                const legendItem = document.createElement('div');
+                legendItem.className = 'flex items-center';
+                legendItem.innerHTML = `
+                    <div class="${colors[index % colors.length]} w-3 h-3 rounded mr-1"></div>
+                    <span class="text-xs">${item.type} (${item.count})</span>
+                `;
+                
+                legend.appendChild(legendItem);
+            });
+            
+            chartContainer.appendChild(chart);
+            chartContainer.appendChild(legend);
+            elements.fileDistributionChart.appendChild(chartContainer);
+        }
+
+        // Update discipline distribution chart
+        function updateDisciplineDistributionChart(disciplines) {
+            elements.disciplineDistributionChart.innerHTML = '';
+            
+            // Convert data to array and sort by count
+            const data = Object.entries(disciplines)
+                .map(([discipline, count]) => ({
+                    discipline,
+                    name: appState.disciplineMap[discipline] || discipline,
+                    count
+                }))
+                .sort((a, b) => b.count - a.count);
+            
+            // Skip if no data
+            if (data.length === 0) {
+                elements.disciplineDistributionChart.innerHTML = '<p class="text-gray-400">Sem dados para exibir</p>';
+                return;
+            }
+            
+            // Create chart container
+            const chartContainer = document.createElement('div');
+            chartContainer.className = 'w-full h-full flex';
+            
+            // Create pie chart
+            const pieChart = document.createElement('div');
+            pieChart.className = 'w-1/2 h-full relative';
+            
+            // Create legend
+            const legend = document.createElement('div');
+            legend.className = 'w-1/2 h-full flex flex-col justify-center overflow-y-auto text-xs space-y-1';
+            
+            // Colors for the chart
+            const colors = [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#EC4899', '#6366F1', '#14B8A6', '#F97316', '#84CC16'
+            ];
+            
+            // Calculate total
+            const total = data.reduce((sum, item) => sum + item.count, 0);
+            
+            // Create pie chart
+            let cumulativePercentage = 0;
+            
+            data.forEach((item, index) => {
+                const percentage = (item.count / total) * 100;
+                const startAngle = cumulativePercentage * 3.6; // 3.6 degrees per percentage
+                const endAngle = (cumulativePercentage + percentage) * 3.6;
+                
+                // Create pie slice
+                const slice = document.createElement('div');
+                slice.className = 'absolute top-0 left-0 w-full h-full';
+                slice.style.background = `conic-gradient(${colors[index % colors.length]} ${startAngle}deg, ${colors[index % colors.length]} ${endAngle}deg, transparent ${endAngle}deg)`;
+                slice.style.clipPath = 'circle(50% at 50% 50%)';
+                
+                pieChart.appendChild(slice);
+                
+                // Add to legend
+                const legendItem = document.createElement('div');
+                legendItem.className = 'flex items-center';
+                legendItem.innerHTML = `
+                    <div style="background-color: ${colors[index % colors.length]}" class="w-3 h-3 rounded-full mr-1"></div>
+                    <span class="truncate" title="${item.name}">${item.name} (${Math.round(percentage)}%)</span>
+                `;
+                
+                legend.appendChild(legendItem);
+                
+                cumulativePercentage += percentage;
+            });
+            
+            // Add center circle to create donut effect
+            const centerCircle = document.createElement('div');
+            centerCircle.className = 'absolute top-1/2 left-1/2 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2';
+            centerCircle.style.width = '60%';
+            centerCircle.style.height = '60%';
+            
+            // Add total count text in the center
+            const totalText = document.createElement('div');
+            totalText.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center';
+            totalText.innerHTML = `
+                <div class="text-sm font-semibold">${total}</div>
+                <div class="text-xs text-gray-500">arquivos</div>
+            `;
+            
+            pieChart.appendChild(centerCircle);
+            pieChart.appendChild(totalText);
+            
+            chartContainer.appendChild(pieChart);
+            chartContainer.appendChild(legend);
+            elements.disciplineDistributionChart.appendChild(chartContainer);
+        }
+
+        // Update discipline and file type filters
+        function updateFilters() {
+            if (!appState.db) return;
+            
+            const transaction = appState.db.transaction(['files'], 'readonly');
+            const filesStore = transaction.objectStore('files');
+            
+            // Get all files
+            const filesRequest = filesStore.getAll();
+            
+            filesRequest.onsuccess = (event) => {
+                const files = event.target.result;
+                
+                // Get all disciplines with file counts
+                const disciplines = {};
+                // Include only actual files, not directories
+                files.filter(file => file.type === 'file').forEach(file => {
+                    if (file.discipline) {
+                        disciplines[file.discipline] = (disciplines[file.discipline] || 0) + 1;
+                    }
+                });
+                
+                // Update discipline list in sidebar
+                updateDisciplinesList(disciplines);
+                
+                // Update discipline filter dropdown
+                updateDisciplineFilter(disciplines);
+                
+                // Get file types with counts
+                const fileTypes = {};
+                files.filter(file => file.type === 'file').forEach(file => {
+                    const extension = file.extension.toLowerCase();
+                    fileTypes[extension] = (fileTypes[extension] || 0) + 1;
+                });
+                
+                // Update file types list in sidebar
+                updateFileTypesList(fileTypes);
+            };
+        }
+
+        // Update disciplines list in sidebar
+        function updateDisciplinesList(disciplines) {
+            elements.disciplinesList.innerHTML = '';
+            
+            if (Object.keys(disciplines).length === 0) {
+                elements.disciplinesList.innerHTML = '<li class="text-gray-500">Nenhuma disciplina encontrada</li>';
+                return;
+            }
+            
+            // Convert to array and sort by code
+            const disciplineArr = Object.entries(disciplines)
+                .map(([code, count]) => ({
+                    code,
+                    name: appState.disciplineMap[code] || code,
+                    count
+                }))
+                .sort((a, b) => a.code.localeCompare(b.code));
+            
+            disciplineArr.forEach(discipline => {
+                const item = document.createElement('li');
+                item.className = 'flex justify-between items-center hover:bg-gray-50 rounded p-1 cursor-pointer';
+                item.innerHTML = `
+                    <span title="${discipline.name}" class="truncate">${discipline.name}</span>
+                    <span class="text-gray-500 text-xs bg-gray-100 px-2 py-1 rounded">${discipline.count}</span>
+                `;
+                
+                item.onclick = () => {
+                    elements.filterDiscipline.value = discipline.code;
+                    elements.searchButton.click();
+                };
+                
+                elements.disciplinesList.appendChild(item);
+            });
+        }
+
+        // Update discipline filter dropdown
+        function updateDisciplineFilter(disciplines) {
+            // Save current selection
+            const currentValue = elements.filterDiscipline.value;
+            
+            // Clear options except the first one
+            while (elements.filterDiscipline.options.length > 1) {
+                elements.filterDiscipline.remove(1);
+            }
+            
+            // Add disciplines as options
+            const disciplineArr = Object.keys(disciplines)
+                .sort()
+                .map(code => ({
+                    code,
+                    name: appState.disciplineMap[code] || code
+                }));
+            
+            disciplineArr.forEach(discipline => {
+                const option = document.createElement('option');
+                option.value = discipline.code;
+                option.textContent = discipline.name;
+                elements.filterDiscipline.appendChild(option);
+            });
+            
+            // Restore selection if possible
+            if (currentValue !== 'all' && Array.from(elements.filterDiscipline.options).some(option => option.value === currentValue)) {
+                elements.filterDiscipline.value = currentValue;
+            }
+        }
+
+        // Update file types list in sidebar
+        function updateFileTypesList(fileTypes) {
+            elements.fileTypesList.innerHTML = '';
+            
+            if (Object.keys(fileTypes).length === 0) {
+                elements.fileTypesList.innerHTML = '<li class="text-gray-500">Nenhum tipo de arquivo encontrado</li>';
+                return;
+            }
+            
+            // Convert to array and sort by count (descending)
+            const fileTypesArr = Object.entries(fileTypes)
+                .map(([type, count]) => ({ type, count }))
+                .sort((a, b) => b.count - a.count);
+            
+            fileTypesArr.forEach(fileType => {
+                const item = document.createElement('li');
+                item.className = 'flex justify-between items-center hover:bg-gray-50 rounded p-1 cursor-pointer';
+                
+                const iconClass = appState.fileTypeIcons[fileType.type.toLowerCase()] || appState.fileTypeIcons.default;
+                
+                item.innerHTML = `
+                    <span class="flex items-center">
+                        <i class="${iconClass} mr-2 text-xs"></i>
+                        <span>${fileType.type.toUpperCase()}</span>
+                    </span>
+                    <span class="text-gray-500 text-xs bg-gray-100 px-2 py-1 rounded">${fileType.count}</span>
+                `;
+                
+                item.onclick = () => {
+                    elements.filterType.value = fileType.type;
+                    elements.searchButton.click();
+                };
+                
+                elements.fileTypesList.appendChild(item);
+            });
+        }
+
+        // Search files based on filters
+        function searchFiles() {
+            if (!appState.db) return;
+            
+            const searchTerm = elements.searchInput.value.trim().toLowerCase();
+            const fileType = elements.filterType.value;
+            const discipline = elements.filterDiscipline.value;
+            
+            const transaction = appState.db.transaction(['files'], 'readonly');
+            const filesStore = transaction.objectStore('files');
+            
+            // Get all files
+            const filesRequest = filesStore.getAll();
+            
+            filesRequest.onsuccess = (event) => {
+                const files = event.target.result;
+                
+                // Filter files
+                const filteredFiles = files.filter(file => {
+                    // Only include actual files, not directories
+                    if (file.type !== 'file') return false;
+                    
+                    // Check file type
+                    if (fileType !== 'all' && file.extension.toLowerCase() !== fileType) {
+                        // Special case for images
+                        if (fileType === 'image' && ['jpg', 'jpeg', 'png', 'gif'].includes(file.extension.toLowerCase())) {
+                            // Include this image
+                        } else {
+                            return false;
+                        }
+                    }
+                    
+                    // Check discipline
+                    if (discipline !== 'all' && file.discipline !== discipline) {
+                        return false;
+                    }
+                    
+                    // Check search term
+                    if (searchTerm && !file.name.toLowerCase().includes(searchTerm)) {
+                        return false;
+                    }
+                    
+                    return true;
+                });
+                
+                // Store filtered files
+                appState.filteredFiles = filteredFiles;
+                
+                // Display filtered files
+                displaySearchResults(filteredFiles);
+            };
+        }
+
+        // Display search results
+        function displaySearchResults(files) {
+            elements.filesList.innerHTML = '';
+            
+            // Display message if no results
+            if (files.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'flex flex-col items-center justify-center text-gray-400 col-span-full h-48';
+                emptyMessage.innerHTML = `
+                    <i class="fas fa-search text-5xl mb-2"></i>
+                    <p>Nenhum resultado encontrado</p>
+                    <p class="text-sm">Tente mudar os filtros de busca</p>
+                `;
+                elements.filesList.appendChild(emptyMessage);
+                return;
+            }
+            
+            // Sort files alphabetically
+            files.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Display files
+            files.forEach(file => {
+                const fileElement = document.createElement('div');
+                const extension = file.extension.toLowerCase();
+                const iconClass = appState.fileTypeIcons[extension] || appState.fileTypeIcons.default;
+                
+                if (appState.viewMode === 'grid') {
+                    fileElement.className = 'bg-white rounded-lg border border-gray-200 p-4 flex flex-col items-center hover:bg-gray-50 cursor-pointer transition';
+                    fileElement.innerHTML = `
+                        <i class="${iconClass} text-4xl mb-2"></i>
+                        <p class="text-sm font-medium text-center truncate w-full">${file.name}</p>
+                        <p class="text-xs text-gray-500">${formatFileSize(file.size)}</p>
+                        ${file.discipline ? `<span class="mt-2 text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">${appState.disciplineMap[file.discipline] || file.discipline}</span>` : ''}
+                    `;
+                } else {
+                    fileElement.className = 'bg-white rounded-lg border border-gray-200 p-3 flex items-center hover:bg-gray-50 cursor-pointer transition col-span-full';
+                    fileElement.innerHTML = `
+                        <i class="${iconClass} text-xl mr-3"></i>
+                        <div class="flex-grow">
+                            <p class="font-medium truncate">${file.name}</p>
+                            <div class="flex text-xs text-gray-500 space-x-2">
+                                <span>${formatFileSize(file.size)}</span>
+                                ${file.discipline ? `<span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">${appState.disciplineMap[file.discipline] || file.discipline}</span>` : ''}
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 ml-2">${new Date(file.lastModified).toLocaleDateString()}</p>
+                    `;
+                }
+                
+                fileElement.onclick = () => viewFile(file);
+                elements.filesList.appendChild(fileElement);
+            });
+        }
+
+        // Convert base64 to Blob
+        function b64toBlob(b64Data, contentType = '', sliceSize = 512) {
+            const byteCharacters = atob(b64Data);
+            const byteArrays = [];
+            
+            for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                const slice = byteCharacters.slice(offset, offset + sliceSize);
+                
+                const byteNumbers = new Array(slice.length);
+                for (let i = 0; i < slice.length; i++) {
+                    byteNumbers[i] = slice.charCodeAt(i);
+                }
+                
+                const byteArray = new Uint8Array(byteNumbers);
+                byteArrays.push(byteArray);
+            }
+            
+            const blob = new Blob(byteArrays, { type: contentType });
+            return blob;
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHTML(unsafe) {
+            return unsafe
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `${type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-blue-500'} text-white px-4 py-2 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out`;
+            
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i>
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            elements.notificationContainer.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.add('opacity-100');
+            }, 10);
+            
+            // Animate out and remove
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'translate-x-full');
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 3000);
+        }
+
+        // Import project function
+        function importProject(files) {
+            if (!appState.db) {
+                showNotification('Banco de dados não inicializado', 'error');
+                return;
+            }
+            
+            // Show loading overlay
+            elements.loadingOverlay.classList.remove('hidden');
+            elements.loadingMessage.textContent = 'Analisando arquivos...';
+            elements.loadingProgress.textContent = '0%';
+            
+            // Convert FileList to array and filter out files we don't want
+            const fileArray = Array.from(files).filter(file => !file.name.includes('desktop.ini'));
+            
+            if (fileArray.length === 0) {
+                elements.loadingOverlay.classList.add('hidden');
+                showNotification('Nenhum arquivo válido encontrado', 'error');
+                return;
+            }
+            
+            // Extract project name from common path prefix
+            let commonPrefix = fileArray[0].webkitRelativePath.split('/')[0];
+            appState.projectName = commonPrefix;
+            
+            // Start processing files
+            processFiles(fileArray);
+        }
+
+        // Process files and store in IndexedDB
+        async function processFiles(files) {
+            try {
+                // Clear existing data
+                await clearDatabase();
+                
+                // Create directories structure first
+                const directories = new Set();
+                
+                files.forEach(file => {
+                    const path = '/' + file.webkitRelativePath.split('/').slice(1).join('/');
+                    const parts = path.split('/').filter(p => p);
+                    
+                    let currentPath = '';
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        currentPath += '/' + parts[i];
+                        directories.add(currentPath);
+                    }
+                });
+                
+                // Store directories
+                const dirArray = Array.from(directories);
+                for (let i = 0; i < dirArray.length; i++) {
+                    const path = dirArray[i];
+                    const name = path.split('/').pop();
+                    const parentPath = path.substring(0, path.lastIndexOf('/')) || '/';
+                    
+                    await storeFile({
+                        path,
+                        name,
+                        parentPath,
+                        type: 'directory',
+                        size: 0,
+                        lastModified: Date.now(),
+                        discipline: extractDiscipline(path)
+                    });
+                    
+                    // Update progress
+                    const progress = Math.round((i / (dirArray.length + files.length)) * 100);
+                    elements.loadingProgress.textContent = `${progress}% (Criando estrutura de pastas)`;
+                }
+                
+                // Now process files
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const path = '/' + file.webkitRelativePath.split('/').slice(1).join('/');
+                    const name = path.split('/').pop();
+                    const parentPath = path.substring(0, path.lastIndexOf('/')) || '/';
+                    const extension = name.includes('.') ? name.split('.').pop() : '';
+                    
+                    // Update loading message
+                    elements.loadingMessage.textContent = `Processando: ${name}`;
+                    
+                    // Read file content
+                    const content = await readFileAsBase64(file);
+                    
+                    // Store file
+                    await storeFile({
+                        path,
+                        name,
+                        parentPath,
+                        type: 'file',
+                        size: file.size,
+                        lastModified: file.lastModified,
+                        extension,
+                        discipline: extractDiscipline(path),
+                        content
+                    });
+                    
+                    // Update progress
+                    const progress = Math.round(((dirArray.length + i) / (dirArray.length + files.length)) * 100);
+                    elements.loadingProgress.textContent = `${progress}%`;
+                }
+                
+                // Store project info
+                await storeProjectInfo({
+                    id: 1,
+                    name: appState.projectName,
+                    lastUpdated: Date.now()
+                });
+                
+                // Update UI
+                elements.projectName.textContent = appState.projectName;
+                elements.lastUpdated.textContent = new Date().toLocaleString();
+                elements.totalFiles.textContent = files.length;
+                
+                // Hide drop zone
+                elements.dropZone.classList.add('hidden');
+                
+                // Load project data
+                loadProjectData();
+                
+                // Hide loading overlay
+                elements.loadingOverlay.classList.add('hidden');
+                
+                showNotification('Projeto importado com sucesso!', 'success');
+            } catch (error) {
+                console.error('Error processing files:', error);
+                elements.loadingOverlay.classList.add('hidden');
+                showNotification('Erro ao processar arquivos: ' + error.message, 'error');
+            }
+        }
+
+        // Extract discipline code from path
+        function extractDiscipline(path) {
+            const parts = path.split('/').filter(p => p);
+            
+            // Look for directory names that start with a number (like "01. Architecture")
+            for (const part of parts) {
+                const match = part.match(/^(\d+)[.\s]/);
+                if (match) {
+                    return match[1].padStart(2, '0'); // Ensure 2-digit format
+                }
+            }
+            
+            return null;
+        }
+
+        // Read file as base64
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    // Extract base64 data (remove data:mimetype;base64, prefix)
+                    const base64 = event.target.result.split(',')[1];
+                    resolve(base64);
+                };
+                
+                reader.onerror = (error) => {
+                    reject(error);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Store file in IndexedDB
+        function storeFile(file) {
+            return new Promise((resolve, reject) => {
+                if (!appState.db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = appState.db.transaction(['files'], 'readwrite');
+                const filesStore = transaction.objectStore('files');
+                
+                const request = filesStore.put(file);
+                
+                request.onsuccess = () => {
+                    resolve();
+                };
+                
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // Store project info in IndexedDB
+        function storeProjectInfo(projectInfo) {
+            return new Promise((resolve, reject) => {
+                if (!appState.db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = appState.db.transaction(['projectInfo'], 'readwrite');
+                const projectStore = transaction.objectStore('projectInfo');
+                
+                const request = projectStore.put(projectInfo);
+                
+                request.onsuccess = () => {
+                    resolve();
+                };
+                
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // Clear database
+        function clearDatabase() {
+            return new Promise((resolve, reject) => {
+                if (!appState.db) {
+                    reject(new Error('Database not initialized'));
+                    return;
+                }
+                
+                const transaction = appState.db.transaction(['files', 'projectInfo'], 'readwrite');
+                const filesStore = transaction.objectStore('files');
+                const projectStore = transaction.objectStore('projectInfo');
+                
+                // Clear files
+                const clearFilesRequest = filesStore.clear();
+                clearFilesRequest.onerror = (event) => {
+                    reject(event.target.error);
+                };
+                
+                // Clear project info
+                const clearProjectRequest = projectStore.clear();
+                clearProjectRequest.onerror = (event) => {
+                    reject(event.target.error);
+                };
+                
+                transaction.oncomplete = () => {
+                    resolve();
+                };
+                
+                transaction.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            if (appState.mode === 'light') {
+                document.documentElement.classList.add('dark');
+                elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                appState.mode = 'dark';
+            } else {
+                document.documentElement.classList.remove('dark');
+                elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                appState.mode = 'light';
+            }
+        }
+
+        // Handle folder drop
+        function handleFolderDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            elements.dropZone.classList.remove('bg-blue-100');
+            
+            // Check if the DataTransfer object has items
+            if (event.dataTransfer.items) {
+                // Unfortunately, webkitGetAsEntry() API doesn't let us get a folder's contents easily
+                // We'll use input element method instead
+                elements.folderInput.click();
+            }
+        }
+
+        // Handle folder drag over
+        function handleFolderDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            elements.dropZone.classList.add('bg-blue-100');
+        }
+
+        // Handle folder drag leave
+        function handleFolderDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            elements.dropZone.classList.remove('bg-blue-100');
+        }
+
+        // Initialize application
+        function init() {
+            // Initialize IndexedDB
+            initDB();
+            
+            // Add event listeners
+            elements.themeToggle.addEventListener('click', toggleTheme);
+            elements.importButton.addEventListener('click', () => elements.folderInput.click());
+            elements.clearDataButton.addEventListener('click', async () => {
+                if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
+                    await clearDatabase();
+                    location.reload();
+                }
+            });
+            
+            elements.folderInput.addEventListener('change', (event) => {
+                if (event.target.files.length > 0) {
+                    importProject(event.target.files);
+                }
+            });
+            
+            elements.dropZone.addEventListener('drop', handleFolderDrop);
+            elements.dropZone.addEventListener('dragover', handleFolderDragOver);
+            elements.dropZone.addEventListener('dragleave', handleFolderDragLeave);
+            elements.dropZone.addEventListener('click', () => elements.folderInput.click());
+            
+            elements.closeViewer.addEventListener('click', () => {
+                elements.fileViewer.classList.add('hidden');
+            });
+            
+            elements.searchButton.addEventListener('click', searchFiles);
+            elements.searchInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    searchFiles();
+                }
+            });
+            
+            elements.viewGrid.addEventListener('click', () => {
+                appState.viewMode = 'grid';
+                elements.viewGrid.classList.add('bg-gray-200');
+                elements.viewGrid.classList.remove('bg-gray-100');
+                elements.viewList.classList.add('bg-gray-100');
+                elements.viewList.classList.remove('bg-gray-200');
+                
+                if (appState.filteredFiles.length > 0) {
+                    displaySearchResults(appState.filteredFiles);
+                } else if (appState.fileSystem) {
+                    navigateTo(appState.currentPath);
+                }
+            });
+            
+            elements.viewList.addEventListener('click', () => {
+                appState.viewMode = 'list';
+                elements.viewList.classList.add('bg-gray-200');
+                elements.viewList.classList.remove('bg-gray-100');
+                elements.viewGrid.classList.add('bg-gray-100');
+                elements.viewGrid.classList.remove('bg-gray-200');
+                
+                if (appState.filteredFiles.length > 0) {
+                    displaySearchResults(appState.filteredFiles);
+                } else if (appState.fileSystem) {
+                    navigateTo(appState.currentPath);
+                }
+            });
+        }
+
+        // Run initialization when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Dark mode styles
+        document.documentElement.classList.add('transition', 'duration-300', 'ease-in-out');
+        const darkModeStyles = document.createElement('style');
+        darkModeStyles.textContent = `
+            .dark body { background-color: #1a1a2e; color: #e1e1e1; }
+            .dark .bg-white { background-color: #252544; }
+            .dark .bg-gray-50 { background-color: #2a2a48; }
+            .dark .bg-gray-100 { background-color: #30304d; }
+            .dark .bg-gray-200 { background-color: #3c3c63; }
+            .dark .text-gray-700 { color: #e1e1e1; }
+            .dark .text-gray-600 { color: #c5c5c5; }
+            .dark .text-gray-500 { color: #a0a0a0; }
+            .dark .text-gray-400 { color: #808080; }
+            .dark .border-gray-200 { border-color: #3c3c63; }
+            .dark .border-gray-300 { border-color: #4b4b75; }
+            .dark .hover\\:bg-gray-50:hover { background-color: #313155; }
+            .dark .hover\\:bg-gray-100:hover { background-color: #3c3c63; }
+            .dark .hover\\:bg-gray-300:hover { background-color: #4b4b75; }
+            .dark .hover\\:text-gray-700:hover { color: #ffffff; }
+            .dark .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+            .dark .shadow-inner { box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3); }
+            .dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4); }
+        `;
+        document.head.appendChild(darkModeStyles);
+    </script>
+</body>
+</html>
