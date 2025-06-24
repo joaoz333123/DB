@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Obras - Blu Engenharia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='db_style.css') }}">
+</head>
+<body>
+    <div id="auth-status">
+        <h1>Verificando acesso...</h1>
+        <p>Por favor, aguarde.</p>
+    </div>
+
+    <main id="dashboard-content" style="display: none;">
+        <header>
+            <h1>Dashboard de Obras</h1>
+            <p>Bem-vindo! Aqui você poderá gerenciar seus projetos.</p>
+        </header>
+        </main>
+
+    <script src="{{ url_for('static', filename='db_script.js') }}" defer></script>
+</body>
+</html>
