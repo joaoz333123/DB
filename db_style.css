@@ -1,0 +1,17 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+#auth-status, header {
+    text-align: center;
+    margin-top: 50px;
+}
+
+main {
+    max-width: 1200px;
+    margin: auto;
+}
